@@ -28,7 +28,8 @@ WORKDIR ${LAMBDA_TASK_ROOT}
 # Copy in the build image dependencies
 COPY --from=build-image ${LAMBDA_TASK_ROOT} ${LAMBDA_TASK_ROOT}
 
-# Install Python since it's not included in the Playwright image for some reason
+# Install Python3 since it's not included in the Playwright image for some reason
+# need to also do a symlink so that it will run when the lambda is invoked
 RUN apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/local/bin/python
 
 # Get the project dependencies

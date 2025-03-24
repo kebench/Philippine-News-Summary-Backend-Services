@@ -1,6 +1,7 @@
 import json
 import asyncio
-from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, CacheMode, BrowserConfig, SemaphoreDispatcher, RateLimiter, CrawlerMonitor, DisplayMode
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, CacheMode, BrowserConfig, SemaphoreDispatcher, RateLimiter, CrawlerMonitor, DisplayMode, LXMLWebScrapingStrategy
+# from crawl4ai.extraction_strategy import CosineStrategy
 
 def read_news():
   with open('functions/phil-news-websites.json') as json_file:
@@ -10,7 +11,20 @@ def read_news():
 
 async def crawl_news_websites(urls):
   browser_config = BrowserConfig(headless=True, verbose=False)
-  run_config = CrawlerRunConfig(cache_mode=CacheMode.BYPASS)
+  run_config = CrawlerRunConfig(
+    scraping_strategy=LXMLWebScrapingStrategy(),
+    cache_mode=CacheMode.BYPASS,
+    excluded_tags=['form', 'header', 'footer', 'nav'],
+    exclude_external_links=True,    
+    exclude_social_media_links=True,
+    exclude_domains=["adtrackers.com", "spammynews.org"],    
+    exclude_social_media_domains=["facebook.com", "twitter.com"],
+    remove_overlay_elements=True,
+    js_code="document.querySelector('.fc-cta-consent')?.click();",
+    simulate_user=True,
+    magic=True,
+    scan_full_page=True,
+  )
 
   dispatcher = SemaphoreDispatcher(
     semaphore_count=5,
@@ -26,9 +40,9 @@ async def crawl_news_websites(urls):
 
   async with AsyncWebCrawler(config=browser_config) as crawler:
     results = await crawler.arun_many(
-      urls, 
+      urls,
       config=run_config,
-      dispatcher=dispatcher
+      dispatcher=dispatcher,
     )
   return results
 

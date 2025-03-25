@@ -1,6 +1,7 @@
 import json
-import asyncio
-from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, CacheMode, BrowserConfig, SemaphoreDispatcher, RateLimiter, CrawlerMonitor, DisplayMode, LXMLWebScrapingStrategy
+from crawl4ai import AsyncWebCrawler, CrawlerRunConfig, CacheMode, BrowserConfig, SemaphoreDispatcher, RateLimiter, LXMLWebScrapingStrategy
+import re
+from datetime import datetime
 # from crawl4ai.extraction_strategy import CosineStrategy
 
 def read_news():
@@ -20,10 +21,11 @@ async def crawl_news_websites(urls):
     exclude_domains=["adtrackers.com", "spammynews.org"],    
     exclude_social_media_domains=["facebook.com", "twitter.com"],
     remove_overlay_elements=True,
-    js_code="document.querySelector('.fc-cta-consent')?.click();",
+    target_elements=["div.just-in-content", "div#new-channel-grid", "h2.text-2xl", "div.news_title"],
+    # js_code="document.querySelector('.fc-cta-consent')?.click();",
     simulate_user=True,
     magic=True,
-    scan_full_page=True,
+    scan_full_page=True
   )
 
   dispatcher = SemaphoreDispatcher(
@@ -31,10 +33,6 @@ async def crawl_news_websites(urls):
     rate_limiter=RateLimiter(
       base_delay=(0.5, 1.0),
       max_delay=10.0
-    ),
-    monitor=CrawlerMonitor(
-      max_visible_rows=15,
-      display_mode=DisplayMode.DETAILED
     )
   )
 
@@ -59,3 +57,24 @@ def extract_relevant_data(crawled_results):
     })
 
   return extracted_data
+
+def clean_news_headlines(news):
+  cleaned_text = re.sub(r'\d{1,2}:\d{2} [APM]{2}', '', news)
+
+	# Extract only the headlines
+  headlines = [re.sub(r'\[|\]', '', match) for match in re.findall(r'\[([^\]]+)\]', cleaned_text)]
+  return headlines
+
+def process_news_data(crawled_data):
+  news_data = []
+  current_date = datetime.now().strftime("%Y-%m-%d")
+  sources = ["GMA News", "Philippine Daily Inquirer", "PNA GOV PH", "Philippine Star"]
+  for index, data in enumerate(crawled_data):
+    headlines = clean_news_headlines(data["markdown"])
+    
+    news_data.extend([{
+        "source": sources[index],
+        "headline": headline.strip(),
+        "date": current_date
+    } for headline in headlines])
+  return news_data

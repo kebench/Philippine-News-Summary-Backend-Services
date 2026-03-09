@@ -1,0 +1,41 @@
+sources:
+  - name: GMANetwork
+    type: crawl
+    url: https://www.gmanetwork.com/news/
+    enabled: true
+    selectors:
+      headline: 
+        - ".just-in-story-title"
+        - ".top-picks-content-description"
+        - ".trending-content-description .content_description_text"
+        - ".stories_tracking_content-description .content_description_text"
+      date: "time"
+  
+  - name: Inquirer
+    type: crawl
+    url: https://globalnation.inquirer.net/
+    enabled: true
+    selectors:
+      headline: ".entry-title" # TO Change
+      date: "time"
+
+  - name: PNAGov
+    type: crawl
+    url: https://www.pna.gov.ph/categories/national
+    enabled: true
+    selectors:
+      headline: ".entry-title" # TO Change
+      date: "time"
+
+  - name: PhilStar
+    type: crawl
+    url: https://www.philstar.com/headlines
+    enabled: true
+    selectors:
+      headline: ".article-title" # TO Change
+      date: "time"
+
+  - name: newsapi
+    type: api
+    enabled: true
+    # api-specific config goes here later

@@ -1,22 +1,74 @@
-# Philippine New Summary Backend Services
-This is a monorepo that contains the backend services needed by Philippine New Summary website.
+# ph-news-backend
+
+Backend services for the Philippine Daily News Summarizer.
+
+## Architecture
+
+```
+EventBridge (cron)
+    │
+    ▼
+services/ingestion      →  MongoDB (raw_headlines)
+    │
+    ▼ (daily trigger)
+services/summarization  →  MongoDB (processed_summaries)
+    │
+    ▼
+services/api            →  Frontend
+```
 
 ## Services
 
-### Crawler Cron
-A docker image that contains crawler for specific news URLs for data.
+| Service | Description | Trigger |
+|---|---|---|
+| `ingestion` | Crawls PH news sources + calls News API | EventBridge cron |
+| `summarization` | Runs LLM summarization via SageMaker | EventBridge cron (daily) |
+| `api` | FastAPI read API for the frontend | API Gateway (Lambda) |
 
-> [!NOTE]
-> Run this in PowerShell!
+## Shared Package
 
-To build: 
+`packages/shared` contains Beanie document models, MongoDB client, and utilities shared across all services.
+
+## Getting Started
+
+### Prerequisites
+- Python 3.11+
+- Docker
+- MongoDB Atlas account (free tier)
+- AWS account
+
+### Local Development
+
+```bash
+cd services/ingestion # Or whatever service that you want to work on
+cp .env.example .env
+# Fill in your values
+
+python -m venv .venv # If no venv
+source .venv/bin/activate
+# Windows (PowerShell): .venv\Scripts\Activate.ps1
 ```
-docker buildx build --platform linux/amd64 --provenance=false -t crawler-cron . 
+
+### Running a service locally
+
+```bash
+pip install -r requirements.txt
+python handler.py
 ```
 
-Before running the docker image, download the runtime interface emulator and install it in the local  machine. Please follow the instuctions on this link [this link](https://docs.aws.amazon.com/lambda/latest/dg/python-image.html#python-image-instructions).
+## Deployment
 
-To run:
+Each service deploys independently as a Lambda function (ingestion, summarization, api). See `infra/` for EventBridge rules and SageMaker config.
+
+## Project Structure
+
 ```
-docker run --platform linux/amd64 -d -v "$HOME\.aws-lambda-rie:/aws-lambda" -p 9000:8080 `--entrypoint /aws-lambda/aws-lambda-rie `crawler-cron `    /usr/local/bin/python -m awslambdaric lambda_function.lambda_handler
+ph-news-backend/
+├── packages/
+│   └── shared/             # Beanie models, DB client, utils
+├── services/
+│   ├── ingestion/          # Crawler + API caller
+│   ├── summarization/      # LLM summarization via SageMaker
+│   └── api/                # FastAPI read API
+└── infra/                  # EventBridge + SageMaker configs
 ```

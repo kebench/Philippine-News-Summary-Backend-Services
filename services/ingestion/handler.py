@@ -1,35 +1,65 @@
 """
 Lambda handler for the ingestion service.
-Triggered by EventBridge cron — crawls PH news sources and calls NewsAPI,
+Triggered by EventBridge cron — crawls PH news sources and calls external APIs,
 then saves raw headlines to MongoDB.
 """
 import asyncio
+import os
 
+from dotenv import load_dotenv
 from shared.db import init_db, close_db
 from shared.utils import get_logger
+from config_loader import load_sources
+from crawler.generic import crawl_all
+from rss.generic import fetch_all_rss
+from storage import save_headlines
 
+# Local dev only — Lambda injects env vars directly
+if not os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    load_dotenv()
 
 logger = get_logger(__name__)
-
 
 
 async def run() -> dict:
     await init_db()
 
-    results = {"crawled": 0, "api": 0, "errors": []}
+    results = {"fetched": {}, "errors": []}
 
     try:
-        print("Crawling sources...")
+        sources = load_sources("sources.yaml")
+        logger.info(f"Loaded {len(sources)} sources")
+
+        # Filter sources by type and route to the appropriate handler
+        crawl_sources_list = [s for s in sources if s["type"] == "crawl"]
+        api_sources_list = [s for s in sources if s["type"] == "api"]
+        rss_sources_list = [s for s in sources if s["type"] == "rss"]
         
-        # TODO: Implement crawling logic here.
+        # Crawl all crawlable sources in parallel
+        if crawl_sources_list:
+            logger.info(f"Starting crawl for {len(crawl_sources_list)} source(s)")
+            results["fetched"].update(await crawl_all(crawl_sources_list))
+
+        if rss_sources_list:
+            logger.info(f"Starting RSS fetch for {len(rss_sources_list)} source(s)")
+            results["fetched"].update(await fetch_all_rss(rss_sources_list))
+
+        # TODO: handle api_sources_list once api_caller/generic.py is implemented
+        if api_sources_list:
+            logger.info(f"Skipping {len(api_sources_list)} API sources — not yet implemented")
+
+        # Save all fetched headlines to MongoDB
+        for source_name, headlines in results["fetched"].items():
+            await save_headlines(source_name, headlines)
+    
     except Exception as e:
-        logger.error(f"NewsAPI failed: {e}")
+        logger.error(f"Ingestion failed: {e}")
         results["errors"].append(str(e))
 
     finally:
         await close_db()
 
-    logger.info(f"Ingestion complete: {results}")
+    # logger.info(f"Ingestion complete: {results}")
     return results
 
 
@@ -39,5 +69,4 @@ def handler(event: dict, context) -> dict:
 
 
 if __name__ == "__main__":
-    # Local dev entrypoint
     asyncio.run(run())

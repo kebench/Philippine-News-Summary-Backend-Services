@@ -7,32 +7,41 @@ sources:
       headline: 
         - ".just-in-story-title"
         - ".top-picks-content-description"
-        - ".trending-content-description .content_description_text"
-        - ".stories_tracking_content-description .content_description_text"
+        - ".trending-content-description"
+        - ".stories-tracking-content-description"
       date: "time"
   
   - name: Inquirer
-    type: crawl
-    url: https://globalnation.inquirer.net/
+    type: rss
+    url: https://newsinfo.inquirer.net/feed
     enabled: true
     selectors:
-      headline: ".entry-title" # TO Change
-      date: "time"
+      headline: title       # field inside each <item> to use as headline
+      url: link             # field inside each <item> to use as article URL
 
-  - name: PNAGov
+  - name: ManilaBulletin
     type: crawl
-    url: https://www.pna.gov.ph/categories/national
+    url: https://mb.com.ph/category/philippines
     enabled: true
     selectors:
-      headline: ".entry-title" # TO Change
+      headline: 
+        - "h2.widget-item-headline"
+        - ".mb-trending-new2 .widget-item-headline"
       date: "time"
 
   - name: PhilStar
     type: crawl
     url: https://www.philstar.com/headlines
     enabled: true
+    wait_until: "load" # Optional: wait for full page load instead of network idle (some content loads continuously via JS)
+    max_scrolls: 5 # Optional: limit number of scrolls to prevent infinite scrolling
+    consent_selector: ".fc-cta-consent" # Optional: selector for cookie consent popup
+    scroll_wait: 1000 # Optional: wait time in ms between scrolls to allow content to load
     selectors:
-      headline: ".article-title" # TO Change
+      headline: 
+        - ".carousel__item__title a"
+        - ".titleForFeature a"
+        - ".news_title a"
       date: "time"
 
   - name: newsapi

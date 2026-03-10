@@ -4,10 +4,12 @@ import os
 
 def get_logger(name: str) -> logging.Logger:
     """Return a logger configured for Lambda/local environments."""
-    level = os.environ.get("LOG_LEVEL", "INFO").upper()
+    log_level = getattr(logging, os.getenv("LOG_LEVEL", "INFO").upper())
 
+    # Set root logger level directly — basicConfig is a no-op after first call
+    logging.getLogger().setLevel(log_level)
+    print(f"Logging initialized at {log_level} level for {name}")  # Print to console immediately for visibility
     logger = logging.getLogger(name)
-    logger.setLevel(level)
 
     if not logger.handlers:
         handler = logging.StreamHandler()

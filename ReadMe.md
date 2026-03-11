@@ -21,45 +21,6 @@ services/api            →  Frontend
 
 | Service | Description | Trigger |
 |---|---|---|
-| `ingestion` | Crawls PH news sources + calls News API | EventBridge cron |
-| `summarization` | Runs LLM summarization via SageMaker | EventBridge cron (daily) |
-| `api` | FastAPI read API for the frontend | API Gateway (Lambda) |
-
-## Shared Package
-
-`packages/shared` contains Beanie document models, MongoDB client, and utilities shared across all services.
-
-## Getting Started
-
-### Prerequisites
-- Python 3.11+
-- Docker
-- MongoDB Atlas account (free tier)
-- AWS account
-
-# ph-news-backend
-
-Backend services for the Philippine Daily News Summarizer.
-
-## Architecture
-
-```
-EventBridge (cron)
-    │
-    ▼
-services/ingestion      →  MongoDB (raw_headlines)
-    │
-    ▼ (daily trigger)
-services/summarization  →  MongoDB (processed_summaries)
-    │
-    ▼
-services/api            →  Frontend
-```
-
-## Services
-
-| Service | Description | Trigger |
-|---|---|---|
 | `ingestion` | Crawls PH news sources + calls external APIs | EventBridge cron |
 | `summarization` | LLM summarization via SageMaker | EventBridge cron (daily) |
 | `api` | FastAPI read API for the frontend | API Gateway (Lambda) |
@@ -79,7 +40,7 @@ services/api            →  Frontend
 ### Local Development
 
 ```bash
-cp .env.example .env
+cp services/ingestion/.env.example services/ingestion/.env
 # Fill in your values
 ```
 

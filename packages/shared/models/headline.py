@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Optional
 from beanie import Document
 from pydantic import Field
 import hashlib

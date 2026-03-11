@@ -1,0 +1,47 @@
+version: "3.9"
+
+services:
+  # Local MongoDB (mirrors Atlas schema for dev)
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: ph_news
+    volumes:
+      - mongo_data:/data/db
+
+  # Run ingestion service locally
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB_NAME: ph_news
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    profiles:
+      - ingestion
+
+  # Run API service locally
+  api:
+    build:
+      context: .
+      dockerfile: services/api/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB_NAME: ph_news
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    profiles:
+      - api
+
+volumes:
+  mongo_data:

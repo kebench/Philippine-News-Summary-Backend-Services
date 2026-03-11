@@ -23,6 +23,7 @@ sources:
     type: crawl
     url: https://mb.com.ph/category/philippines
     enabled: true
+    wait_until: "load" # Optional: wait for full page load instead of network idle (some content loads continuously via JS)
     selectors:
       headline: 
         - "h2.widget-item-headline"
@@ -32,7 +33,7 @@ sources:
   - name: PhilStar
     type: crawl
     url: https://www.philstar.com/headlines
-    enabled: true
+    enabled: true # Temporarily disabled due to site structure changes that broke selectors
     wait_until: "load" # Optional: wait for full page load instead of network idle (some content loads continuously via JS)
     max_scrolls: 5 # Optional: limit number of scrolls to prevent infinite scrolling
     consent_selector: ".fc-cta-consent" # Optional: selector for cookie consent popup
@@ -44,7 +45,14 @@ sources:
         - ".news_title a"
       date: "time"
 
-  - name: newsapi
+  - name: ABSCBN
     type: api
     enabled: true
+    url: https://od2-content-api.abs-cbn.com/prod/latest?sectionId=nation&brand=OD&partner=imp-01&limit=50&offset=0
+    # headers: # Support for custom headers if needed by the API (e.g. for authentication) also uses env vars for sensitive info
+    #   Authorization: "Bearer ${SOME_ENV_VAR_FOR_TOKEN}"
+    #   X-API-Key: "${SOME_ENV_VAR_FOR_API_KEY}"
+    selectors:
+      headline: "listItem[].title"
+      url: "listItem[].slugline_url"
     # api-specific config goes here later

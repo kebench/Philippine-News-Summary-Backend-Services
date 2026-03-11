@@ -12,6 +12,7 @@ from shared.utils import get_logger
 from config_loader import load_sources
 from crawler.generic import crawl_all
 from rss.generic import fetch_all_rss
+from api_caller.generic import fetch_all_apis
 from storage import save_headlines
 
 # Local dev only — Lambda injects env vars directly
@@ -46,7 +47,8 @@ async def run() -> dict:
 
         # TODO: handle api_sources_list once api_caller/generic.py is implemented
         if api_sources_list:
-            logger.info(f"Skipping {len(api_sources_list)} API sources — not yet implemented")
+            logger.info(f"Starting API fetch for {len(api_sources_list)} source(s)")
+            results["fetched"].update(await fetch_all_apis(api_sources_list))
 
         # Save all fetched headlines to MongoDB
         for source_name, headlines in results["fetched"].items():

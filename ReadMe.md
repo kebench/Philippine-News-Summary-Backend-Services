@@ -117,7 +117,13 @@ python handler.py
 Each service deploys as a Docker container on Lambda. Build from the project root:
 
 ```bash
-docker build -f services/ingestion/Dockerfile .
+docker build -f services/ingestion/Dockerfile . -t ph-news-ingestion
+docker run --env-file services/ingestion/.env -p 9000:8080 ph-news-ingestion
+```
+
+Invoke
+```bash
+curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{}'
 ```
 
 ## Project Structure

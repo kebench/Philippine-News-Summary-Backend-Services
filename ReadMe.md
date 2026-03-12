@@ -96,9 +96,9 @@ docker push <account-id>.dkr.ecr.eu-west-1.amazonaws.com/ph-news-ingestion:lates
 
 ### Lambda Configuration
 - Runtime: Container image
-- Memory: 1024MB
+- Memory: at least 2048MB
 - Timeout: 5 minutes
-- Environment variables: `MONGODB_URI`, `LOG_LEVEL`
+- Environment variables: `MONGODB_URI`, `LOG_LEVEL`, `MONGO_DB_NAME=ph_news`
 
 ## Local Testing
 

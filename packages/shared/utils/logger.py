@@ -8,7 +8,6 @@ def get_logger(name: str) -> logging.Logger:
 
     # Set root logger level directly — basicConfig is a no-op after first call
     logging.getLogger().setLevel(log_level)
-    print(f"Logging initialized at {log_level} level for {name}")  # Print to console immediately for visibility
     logger = logging.getLogger(name)
 
     if not logger.handlers:

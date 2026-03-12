@@ -1,6 +1,4 @@
 from datetime import datetime
-from beanie import BulkWriter
-from beanie.operators import Set
 from pymongo import UpdateOne
 from shared.models.headline import Headline as RawHeadline
 from shared.utils.logger import get_logger

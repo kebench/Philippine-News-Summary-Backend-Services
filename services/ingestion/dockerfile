@@ -2,30 +2,19 @@ FROM python:3.11-slim-bookworm
 
 WORKDIR /var/task
 
-# Install curl for downloading RIE
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && rm -rf /var/lib/apt/lists/*
 
-# Install Lambda Runtime Interface Client
 RUN pip install awslambdaric
 
-# Install Lambda Runtime Interface Emulator (RIE) for local testing
-RUN curl -Lo /usr/local/bin/aws-lambda-rie https://github.com/aws/aws-lambda-runtime-interface-emulator/releases/latest/download/aws-lambda-rie \
-    && chmod +x /usr/local/bin/aws-lambda-rie
-
-# Install dependencies first — better layer caching
 COPY services/ingestion/requirements.txt .
 RUN pip install -r requirements.txt
 
-# Install Playwright browsers and system dependencies
+# Install Playwright browsers to a fixed path accessible by any user
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN python -m playwright install chromium --with-deps
 
-# Copy shared package and service code
 COPY packages/shared ./shared
 COPY services/ingestion/ .
 
-# Copy entrypoint script — switches between RIE locally and awslambdaric on Lambda
-COPY services/ingestion/entry.sh /entry.sh
-RUN chmod +x /entry.sh
-
-ENTRYPOINT ["/entry.sh"]
+ENTRYPOINT ["/usr/local/bin/python", "-m", "awslambdaric"]
 CMD ["handler.handler"]

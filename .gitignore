@@ -42,3 +42,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+aws-lambda-rie
+aws-lambda-rie.exe
+
+dockerfile.local

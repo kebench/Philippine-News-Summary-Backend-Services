@@ -1,6 +1,6 @@
 # ph-news-backend — Documentation
 
-This folder contains planning documents, architecture references, and decision records for the `ph-news-backend` project.
+This folder contains planning and documents, architecture references, and decision records for the `ph-news-backend` project.
 
 ---
 
@@ -15,7 +15,8 @@ docs/
 │   └── summarizer-architecture.png            # Summarizer system architecture diagram (v3.1)
 └── decisions/
     ├── ADR-001-summarizer-arch.md             # Initial summarizer architecture decisions
-    └── ADR-002-messaging-and-watchdog.md      # SNS → SQS pattern and Watchdog trigger
+    ├── ADR-002-messaging-and-watchdog.md      # SNS → SQS pattern and Watchdog trigger
+    └── ADR-003-terraform-iac.md               # Provisioning resources using terraform
 ```
 
 ---
@@ -39,3 +40,4 @@ ADRs capture *why* decisions were made, not just what was decided. Read these be
 |-----|----------|--------|
 | [ADR-001](decisions/ADR-001-summarizer-arch.md) | Summarizer pipeline architecture — microservices, VPC design, model hosting, log retention | Partially superseded by ADR-002 |
 | [ADR-002](decisions/ADR-002-messaging-and-watchdog.md) | Messaging pattern (SNS → SQS) and Watchdog Lambda trigger | Accepted |
+| [ADR-002](decisions/ADR-003-terraform-iac.md) | Resource provision using Terraform | Accepted |

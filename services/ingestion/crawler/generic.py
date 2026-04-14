@@ -16,7 +16,16 @@ async def crawl_all(sources: list[dict]) -> dict:
 
     async with async_playwright() as p:
         # One shared browser for all sources — much cheaper than one browser per source
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",  # Lambda has very limited /dev/shm
+                "--disable-gpu",             # No GPU in Lambda
+                "--single-process",          # Run renderer in same process — saves memory
+            ]
+        )
 
         # Create a shared browser context with a real user agent —
         # prevents bot detection on sites like PhilStar that block default headless UA

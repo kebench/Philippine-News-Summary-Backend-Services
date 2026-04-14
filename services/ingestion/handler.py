@@ -45,7 +45,7 @@ async def run() -> dict:
             logger.info(f"Starting RSS fetch for {len(rss_sources_list)} source(s)")
             results["fetched"].update(await fetch_all_rss(rss_sources_list))
 
-        # TODO: handle api_sources_list once api_caller/generic.py is implemented
+        # Fetch all API sources in parallel — this is separate from crawling since it uses httpx, not Playwright
         if api_sources_list:
             logger.info(f"Starting API fetch for {len(api_sources_list)} source(s)")
             results["fetched"].update(await fetch_all_apis(api_sources_list))

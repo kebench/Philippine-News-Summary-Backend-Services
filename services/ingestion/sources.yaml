@@ -33,10 +33,9 @@ sources:
   - name: PhilStar
     type: crawl
     url: https://www.philstar.com/headlines
-    enabled: true # Temporarily disabled due to site structure changes that broke selectors
+    enabled: true
     wait_until: "load" # Optional: wait for full page load instead of network idle (some content loads continuously via JS)
     max_scrolls: 5 # Optional: limit number of scrolls to prevent infinite scrolling
-    consent_selector: ".fc-cta-consent" # Optional: selector for cookie consent popup
     scroll_wait: 1000 # Optional: wait time in ms between scrolls to allow content to load
     selectors:
       headline: 

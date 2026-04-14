@@ -69,7 +69,7 @@ async def fetch_api(source: dict) -> list[dict]:
     # Resolve headers from sources.yaml — replaces ${ENV_VAR} with actual values
     # Merges with default User-Agent, source headers take precedence
     headers = {
-        "User-Agent": "Mozilla/5.0",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
         **resolve_env_vars(source.get("headers", {}))
     }
 

@@ -19,6 +19,15 @@ sources:
       headline: title       # field inside each <item> to use as headline
       url: link             # field inside each <item> to use as article URL
 
+  - name: InquirerWebsite
+    type: crawl
+    url: https://newsinfo.inquirer.net/
+    enabled: true
+    selectors:
+      headline:
+        - "#ncg-info h1 a"
+        - "#cmr-info h1 a"
+
   - name: ManilaBulletin
     type: crawl
     url: https://mb.com.ph/category/philippines

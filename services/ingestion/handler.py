@@ -9,11 +9,11 @@ import os
 from dotenv import load_dotenv
 from shared.db import init_db, close_db
 from shared.utils import get_logger
-from config_loader import load_sources
-from crawler.generic import crawl_all
-from rss.generic import fetch_all_rss
-from api_caller.generic import fetch_all_apis
-from storage import save_headlines
+from utils.config_loader import load_sources
+from source_types.crawler import crawl_all
+from source_types.rss import fetch_all_rss
+from source_types.api_caller import fetch_all_apis
+from utils.storage import save_headlines
 
 # Local dev only — Lambda injects env vars directly
 if not os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):

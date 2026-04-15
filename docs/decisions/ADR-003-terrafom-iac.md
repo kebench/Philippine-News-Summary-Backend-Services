@@ -68,11 +68,13 @@ Terraform code is organised into **reusable modules per infrastructure type** an
 ```
 terraform/
 ├── modules/
-│   ├── lambda/          # reusable Lambda + IAM role module
-│   ├── ec2/             # reusable EC2 + EBS + security group module
-│   ├── sqs_sns/         # reusable SNS topic + SQS queue + DLQ module
-│   ├── vpc/             # reusable VPC + subnet module
-│   └── ecr/             # reusable ECR repository module
+│   ├── lambda_image/    # Docker image-based Lambda (ingestion)
+│   ├── lambda_zip/      # Zip-based Lambda (summarizer Lambdas)
+│   ├── eventbridge/     # EventBridge scheduled rules
+│   ├── ec2/
+│   ├── sqs_sns/
+│   ├── vpc/
+│   └── ecr/
 ├── environments/
 │   └── prod/
 │       ├── ingestion/

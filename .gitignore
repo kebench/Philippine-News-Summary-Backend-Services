@@ -47,3 +47,16 @@ aws-lambda-rie
 aws-lambda-rie.exe
 
 dockerfile.local
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+crash.log
+crash.*.log

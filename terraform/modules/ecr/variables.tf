@@ -12,3 +12,8 @@ variable "scan_on_push" {
   description = "flag for scanning images for vulnerabilities on push"
   type = bool
 }
+
+variable "image_retention_count" {
+  description = "the number of images to retain in the ECR repository"
+  type       = number
+}

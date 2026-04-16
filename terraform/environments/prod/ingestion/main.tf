@@ -7,6 +7,7 @@ module "ecr" {
   repository_name      = var.repository_name
   image_tag_mutability = var.image_tag_mutability
   scan_on_push         = var.scan_on_push
+  image_retention_count = var.image_retention_count
 }
 
 module "lambda" {

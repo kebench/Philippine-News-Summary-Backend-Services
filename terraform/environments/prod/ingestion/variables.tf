@@ -101,3 +101,8 @@ variable "maximum_window_in_minutes" {
   description = "The maximum window in minutes for the EventBridge scheduler schedule"
   type        = number
 }
+
+variable "image_retention_count" {
+  description = "The number of images to retain in the ECR repository"
+  type       = number
+}

@@ -33,27 +33,30 @@ All `ph-news-backend` AWS infrastructure is managed via **Terraform**, retroacti
 
 ---
 
-## Decision 2 — Remote Backend: S3 + DynamoDB
+## Decision 2 — Remote Backend: S3 with Native Locking
 
 ### What was decided
-Terraform state is stored remotely in an **S3 bucket** with state locking via a **DynamoDB table** from day one.
+Terraform state is stored remotely in an **S3 bucket** with state locking via **S3 native locking** (`use_lockfile = true`).
 
 ```
-S3 bucket:     ph-news-prod-terraform-state
-DynamoDB table: ph-news-prod-terraform-locks
+S3 bucket: ph-news-prod-terraform-state
 ```
 
-These two resources are the first things provisioned — manually, once — before any other Terraform is written. Everything else is managed by Terraform thereafter.
+This bucket is the first resource provisioned — manually, once — before any other Terraform is written. Everything else is managed by Terraform thereafter.
 
 ### Why
 - Local state is fragile — loss of the state file means Terraform loses track of all provisioned resources
 - Remote state is the industry standard even for solo projects
-- DynamoDB locking prevents state corruption if `terraform apply` is ever run concurrently (e.g. from GitHub Actions in the future)
+- S3 native locking (`use_lockfile = true`) prevents state corruption if `terraform apply` is ever run concurrently — no additional resources required
 - S3 versioning enabled on the state bucket — allows rollback to a previous state if needed
+- DynamoDB-based locking was originally planned but is **deprecated as of Terraform 1.10+** and will be removed in a future version — S3 native locking is the correct forward-looking choice
 
 ### Cost
 - S3: negligible — state files are small, costs cents per month
-- DynamoDB: free tier covers the lock table comfortably
+- No DynamoDB table needed — eliminates an additional resource and its associated cost
+
+### Alternatives considered
+- **S3 + DynamoDB locking:** Originally planned, rejected after implementation — DynamoDB-based locking is deprecated in Terraform 1.10+ and will be removed in a future minor version. Migrating away from it later is unnecessary overhead.
 
 ---
 
@@ -65,11 +68,13 @@ Terraform code is organised into **reusable modules per infrastructure type** an
 ```
 terraform/
 ├── modules/
-│   ├── lambda/          # reusable Lambda + IAM role module
-│   ├── ec2/             # reusable EC2 + EBS + security group module
-│   ├── sqs_sns/         # reusable SNS topic + SQS queue + DLQ module
-│   ├── vpc/             # reusable VPC + subnet module
-│   └── ecr/             # reusable ECR repository module
+│   ├── lambda_image/    # Docker image-based Lambda (ingestion)
+│   ├── lambda_zip/      # Zip-based Lambda (summarizer Lambdas)
+│   ├── eventbridge/     # EventBridge scheduled rules
+│   ├── ec2/
+│   ├── sqs_sns/
+│   ├── vpc/
+│   └── ecr/
 ├── environments/
 │   └── prod/
 │       ├── ingestion/
@@ -77,7 +82,7 @@ terraform/
 │       └── summarizer/
 │           └── main.tf  # summarizer stack — composes modules
 └── bootstrap/
-    └── main.tf          # S3 backend + DynamoDB lock table (provisioned once manually)
+    └── main.tf          # S3 state bucket (provisioned once manually)
 ```
 
 ### Why
@@ -104,7 +109,6 @@ ph-news-prod-summarizer-sqs
 ph-news-prod-summarizer-starter-lambda
 ph-news-prod-watchdog-lambda
 ph-news-prod-terraform-state        (S3 bucket)
-ph-news-prod-terraform-locks        (DynamoDB table)
 ```
 
 ### Why
@@ -189,7 +193,7 @@ Terraform version and AWS provider version are **pinned explicitly** in every mo
 
 ```hcl
 terraform {
-  required_version = ">= 1.7.0"
+  required_version = ">= 1.9.0"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -240,7 +244,8 @@ Existing manually-provisioned ingestion resources are **imported into Terraform 
 
 ## Consequences
 
-- The `bootstrap/` directory must be applied manually once before any other Terraform is run — S3 and DynamoDB must exist before the remote backend can be configured
+- The `bootstrap/` directory must be applied manually once before any other Terraform is run — the S3 state bucket must exist before the remote backend can be configured
 - All future infrastructure changes go through Terraform — no manual AWS console provisioning from this point forward
 - ADR-004 will be written when GitHub Actions CI/CD is implemented for automated Terraform deployment
 - Ingestion pipeline refactor (code structure) should be completed before the Terraform import to avoid importing resources that will immediately need updating
+- IAM permissions carry a privilege escalation risk via `iam:AttachRolePolicy`. Permission boundaries on all `ph-news-*` roles should be implemented before moving to production
